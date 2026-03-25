@@ -8,6 +8,7 @@ type SwitchScreenMsg int
 const (
 	ScreenHome SwitchScreenMsg = iota
 	ScreenInfo
+	ScreenConnectionForm
 	ScreenConnection
 )
 

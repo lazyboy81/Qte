@@ -1,7 +1,7 @@
 package home
 
 import (
-	"TQT/internal/common"
+	"qit/internal/common"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -33,7 +33,7 @@ func NewHomePage() Model {
 		menuItem{
 			title:  "New Connection",
 			desc:   "Connect to a database",
-			screen: common.ScreenConnection,
+			screen: common.ScreenConnectionForm,
 		},
 		menuItem{
 			title:  "Info",
@@ -64,7 +64,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, common.GetBinding("enter")):
+		case key.Matches(msg, common.StartKey):
 			// Get selected item and switch to its screen
 			selected, ok := m.list.SelectedItem().(menuItem)
 			if ok {

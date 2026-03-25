@@ -1,44 +1,39 @@
 package root
 
 import (
-	"TQT/internal/common"
-	"TQT/internal/connection"
-	"TQT/internal/home"
-	"TQT/internal/info"
+	"qit/internal/common"
+	"qit/internal/db"
+	"qit/internal/home"
+	"qit/internal/info"
 
-	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 var (
 	logo = `
-  _______   ____   _______
- |__   __| / __ \ |__   __|
-    | |   | |  | |   | |
-    | |   | |  | |   | |
-    | |   | |__| |   | |
-    |_|    \___\_\   |_|
+   ____         ______
+  / __ \   (_) /_  __/
+ / / / /  / /   / /  
+/ /_/ /  / /   / /   
+\___\_\ /_/   /_/  
 `
 )
 
 type Model struct {
 	currentScreen common.SwitchScreenMsg
 	screens       map[common.SwitchScreenMsg]tea.Model
-	help          help.Model
-	keys          common.KeyMap
 	width, height int
 }
 
 func NewRootModel() Model {
 	return Model{
 		currentScreen: common.ScreenHome,
-		help:          help.New(),
-		keys:          common.GetKeyMappings(),
 		screens: map[common.SwitchScreenMsg]tea.Model{
-			common.ScreenHome:       home.NewHomePage(),
-			common.ScreenInfo:       info.NewInfoModel(),
-			common.ScreenConnection: connection.NewConnectionModel(),
+			common.ScreenHome:           home.NewHomePage(),
+			common.ScreenInfo:           info.NewInfoModel(),
+			common.ScreenConnectionForm: db.NewConnectionInfoFormModel(),
+			common.ScreenConnection:     db.NewConnectionModel(),
 		},
 	}
 }
@@ -91,6 +86,5 @@ func (m Model) View() string {
 		lipgloss.Left,
 		titleStyle.Render(logo),
 		m.screens[m.currentScreen].View(),
-		m.help.View(m.keys),
 	)
 }

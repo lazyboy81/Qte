@@ -1,11 +1,11 @@
-APP_NAME=tqt
-CMD=./cmd/tqt
+APP_NAME=qit
+CMD=./cmd/qit
 BUILD_DIR=build
 
 .PHONY: build build-all clean
 
 build:
-	go build -o $(BUILD_DIR)/$(APP_NAME) $(CMD)
+	go build -o $(BUILD_DIR)/$(APP_NAME).exe $(CMD)
 
 build-all:
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/$(APP_NAME) $(CMD)
