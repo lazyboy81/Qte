@@ -1,0 +1,60 @@
+package dbModels
+
+import (
+	"qit/internal/common"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
+)
+
+var (
+	isTransactional bool
+	query           string
+)
+
+type QueryModel struct {
+	form *huh.Form
+}
+
+func NewQueryModel() QueryModel {
+	return QueryModel{
+		form: huh.NewForm(
+			huh.NewGroup(
+				huh.NewConfirm().
+					Title("Execute Transactionally?").
+					Description("Wraps the query in BEGIN and COMMIT").
+					Affirmative("Yes").
+					Negative("No").
+					Value(&isTransactional),
+				huh.NewText().
+					Title("SQL Query").
+					Placeholder("SELECT * FROM users;").
+					Lines(8). // Set height
+					Value(&query).
+					Editor("vim").
+					ExternalEditor(true),
+			),
+		),
+	}
+}
+
+func (m QueryModel) EnterParams(params map[string]string) {}
+
+func (m QueryModel) Init() tea.Cmd {
+	return m.form.Init()
+}
+
+func (m QueryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	updated, cmd := m.form.Update(msg)
+	m.form = updated.(*huh.Form)
+
+	if m.form.State == huh.StateCompleted {
+		return m, common.SwitchTo(common.ScreenHome, nil)
+	}
+
+	return m, cmd
+}
+
+func (m QueryModel) View() string {
+	return m.form.View()
+}

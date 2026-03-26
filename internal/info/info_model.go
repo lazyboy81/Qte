@@ -23,6 +23,8 @@ type Model struct {
 	help help.Model
 }
 
+func (m Model) EnterParams(params map[string]string) {}
+
 func NewInfoModel() Model {
 	return Model{
 		help: help.New(),
@@ -38,7 +40,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, common.ReturnKey):
-			return m, common.SwitchTo(common.ScreenHome)
+			return m, common.SwitchTo(common.ScreenHome, nil)
 		}
 	}
 

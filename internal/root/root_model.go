@@ -2,7 +2,7 @@ package root
 
 import (
 	"qit/internal/common"
-	"qit/internal/db"
+	"qit/internal/dbModels"
 	"qit/internal/home"
 	"qit/internal/info"
 
@@ -20,20 +20,27 @@ var (
 `
 )
 
+type Screen interface {
+	tea.Model
+
+	EnterParams(map[string]string)
+}
+
 type Model struct {
 	currentScreen common.SwitchScreenMsg
-	screens       map[common.SwitchScreenMsg]tea.Model
+	screens       map[common.SwitchScreenMsg]Screen
 	width, height int
 }
 
 func NewRootModel() Model {
 	return Model{
 		currentScreen: common.ScreenHome,
-		screens: map[common.SwitchScreenMsg]tea.Model{
+		screens: map[common.SwitchScreenMsg]Screen{
 			common.ScreenHome:           home.NewHomePage(),
 			common.ScreenInfo:           info.NewInfoModel(),
-			common.ScreenConnectionForm: db.NewConnectionInfoFormModel(),
-			common.ScreenConnection:     db.NewConnectionModel(),
+			common.ScreenConnectionForm: dbModels.NewConnectionInfoFormModel(),
+			common.ScreenConnection:     dbModels.NewConnectionModel(),
+			common.ScreenQuery:          dbModels.NewQueryModel(),
 		},
 	}
 }
@@ -48,12 +55,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case tea.KeyCtrlC.String(), "q":
 			return m, tea.Quit
-		case "?":
-			return m, func() tea.Msg {
-				return common.ScreenInfo
-			}
+		case tea.KeyCtrlQuestionMark.String():
+			return m, common.SwitchTo(common.ScreenInfo, nil)
 		}
 	// Handle window resize globally, store dimensions
 	case tea.WindowSizeMsg:
@@ -62,8 +67,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Forward to current screen too (fall through below)
 
 	// *** THIS IS THE KEY PART — screen switching ***
-	case common.SwitchScreenMsg:
-		m.currentScreen = msg
+	case common.ScreenMsg:
+		m.currentScreen = msg.DestScreen
+		m.screens[m.currentScreen].EnterParams(msg.Params)
 		// Re-initialize the new screen when switching to it
 		return m, m.screens[m.currentScreen].Init()
 
@@ -71,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Delegate to the current screen
 	updatedScreen, cmd := m.screens[m.currentScreen].Update(msg)
-	m.screens[m.currentScreen] = updatedScreen.(tea.Model)
+	m.screens[m.currentScreen] = updatedScreen.(Screen)
 
 	return m, cmd
 }

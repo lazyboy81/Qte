@@ -52,6 +52,8 @@ func NewHomePage() Model {
 	}
 }
 
+func (m Model) EnterParams(params map[string]string) {}
+
 // Init we do any initialization that we want to do in this method (sort of like the love.load() function).
 // since we are simply getting user input here which are db url, username and password we don't need anything
 func (m Model) Init() tea.Cmd {
@@ -68,7 +70,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Get selected item and switch to its screen
 			selected, ok := m.list.SelectedItem().(menuItem)
 			if ok {
-				return m, common.SwitchTo(selected.screen)
+				return m, common.SwitchTo(selected.screen, nil)
 			}
 		}
 	}

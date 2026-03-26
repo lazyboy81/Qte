@@ -1,28 +1,18 @@
-package db
+package dbModels
 
 import (
 	"qit/internal/common"
+	"qit/internal/db"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// messages
-type connectResultMsg struct {
-	err error
-}
-
-// simulate connecting to a foreign server
-func connectToDatabase() tea.Cmd {
-	return func() tea.Msg {
-		// simulate network delay
-		_, err := connect(selectedProvider, databaseUrl)
-
-		// return nil on success, or an error
-		return connectResultMsg{err: err}
-	}
-}
+var (
+	provider string
+	url      string
+)
 
 type ConnectionModel struct {
 	spinner   spinner.Model
@@ -39,8 +29,13 @@ func NewConnectionModel() ConnectionModel {
 	}
 }
 
+func (m ConnectionModel) EnterParams(params map[string]string) {
+	provider = params["provider"]
+	url = params["url"]
+}
+
 func (m ConnectionModel) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, connectToDatabase())
+	return tea.Batch(m.spinner.Tick, db.ConnectToDatabase(provider, url))
 }
 
 func (m ConnectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -48,11 +43,11 @@ func (m ConnectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 
-	case connectResultMsg:
+	case db.ConnectResultMsg:
 		m.loading = false
-		m.err = msg.err
-		m.connected = msg.err == nil
-		return m, nil
+		m.err = msg.Err
+		m.connected = msg.Err == nil
+		cmds = append(cmds, common.SwitchTo(common.ScreenQuery, nil))
 
 	case spinner.TickMsg:
 		// allow spinner to animate
@@ -81,5 +76,5 @@ func (m ConnectionModel) View() string {
 		return "Error: " + m.err.Error() + "\nPress q to quit."
 	}
 
-	return "Connected successfully! 🎉\nPress q to quit."
+	return "Connected successfully!"
 }
