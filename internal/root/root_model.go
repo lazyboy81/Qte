@@ -23,7 +23,7 @@ var (
 type Screen interface {
 	tea.Model
 
-	EnterParams(map[string]string)
+	EnterParams(common.AdditionalParam)
 }
 
 type Model struct {
@@ -41,6 +41,7 @@ func NewRootModel() Model {
 			common.ScreenConnectionForm: dbModels.NewConnectionInfoFormModel(),
 			common.ScreenConnection:     dbModels.NewConnectionModel(),
 			common.ScreenQuery:          dbModels.NewQueryModel(),
+			common.ScreenQueryResult:    dbModels.NewResultModel(),
 		},
 	}
 }
@@ -57,7 +58,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case tea.KeyCtrlC.String(), "q":
 			return m, tea.Quit
-		case tea.KeyCtrlQuestionMark.String():
+		case "?":
 			return m, common.SwitchTo(common.ScreenInfo, nil)
 		}
 	// Handle window resize globally, store dimensions

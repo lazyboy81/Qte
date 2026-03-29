@@ -4,7 +4,6 @@ import (
 	"qit/internal/common"
 
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -52,7 +51,7 @@ func NewHomePage() Model {
 	}
 }
 
-func (m Model) EnterParams(params map[string]string) {}
+func (m Model) EnterParams(params common.AdditionalParam) {}
 
 // Init we do any initialization that we want to do in this method (sort of like the love.load() function).
 // since we are simply getting user input here which are db url, username and password we don't need anything
@@ -65,8 +64,8 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, common.StartKey):
+		switch msg.String() {
+		case "enter":
 			// Get selected item and switch to its screen
 			selected, ok := m.list.SelectedItem().(menuItem)
 			if ok {

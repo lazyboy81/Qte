@@ -48,7 +48,7 @@ func NewConnectionInfoFormModel() InfoFormModel {
 	}
 }
 
-func (m InfoFormModel) EnterParams(params map[string]string) {}
+func (m InfoFormModel) EnterParams(params common.AdditionalParam) {}
 
 func (m InfoFormModel) Init() tea.Cmd {
 	return m.form.Init()
@@ -60,7 +60,7 @@ func (m InfoFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.form.State == huh.StateCompleted {
 		return m, common.SwitchTo(common.ScreenConnection,
-			map[string]string{"provider": selectedProvider, "url": databaseUrl, "username": username, "password": password},
+			common.AdditionalParam{"provider": selectedProvider, "url": databaseUrl, "username": username, "password": password},
 		)
 	}
 

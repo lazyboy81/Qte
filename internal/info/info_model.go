@@ -19,11 +19,25 @@ var (
 	listStyle = lipgloss.NewStyle().Padding(1, 2)
 )
 
+type KeyMap struct {
+	Return key.Binding
+}
+
+func (k KeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Return}
+}
+
+func (k KeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Return},
+	}
+}
+
 type Model struct {
 	help help.Model
 }
 
-func (m Model) EnterParams(params map[string]string) {}
+func (m Model) EnterParams(params common.AdditionalParam) {}
 
 func NewInfoModel() Model {
 	return Model{
@@ -38,8 +52,8 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, common.ReturnKey):
+		switch msg.String() {
+		case tea.KeyCtrlR.String():
 			return m, common.SwitchTo(common.ScreenHome, nil)
 		}
 	}
@@ -63,13 +77,11 @@ Supported database include:
 
 	content := boxStyle.Render(body + listStyle.Render(supportedDbs.String()))
 
-	mappings := common.GetKeyMappings()
-	mappings.Quit.SetEnabled(false)
-	mappings.Start.SetEnabled(false)
-
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		content,
-		m.help.View(mappings),
+		m.help.View(KeyMap{
+			Return: key.NewBinding(key.WithKeys("ctrl+r"), key.WithHelp("ctrl+r", "return")),
+		}),
 	)
 }

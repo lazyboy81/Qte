@@ -28,6 +28,7 @@ func NewQueryModel() QueryModel {
 					Value(&isTransactional),
 				huh.NewText().
 					Title("SQL Query").
+					ShowLineNumbers(true).
 					Placeholder("SELECT * FROM users;").
 					Lines(8). // Set height
 					Value(&query).
@@ -38,7 +39,7 @@ func NewQueryModel() QueryModel {
 	}
 }
 
-func (m QueryModel) EnterParams(params map[string]string) {}
+func (m QueryModel) EnterParams(params common.AdditionalParam) {}
 
 func (m QueryModel) Init() tea.Cmd {
 	return m.form.Init()
@@ -49,7 +50,7 @@ func (m QueryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.form = updated.(*huh.Form)
 
 	if m.form.State == huh.StateCompleted {
-		return m, common.SwitchTo(common.ScreenHome, nil)
+		return m, common.SwitchTo(common.ScreenQueryResult, nil)
 	}
 
 	return m, cmd

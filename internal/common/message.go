@@ -5,9 +5,11 @@ import tea "github.com/charmbracelet/bubbletea"
 // SwitchScreenMsg Navigation message — any model can emit this to switch screens
 type SwitchScreenMsg int
 
+type AdditionalParam map[string]any
+
 type ScreenMsg struct {
 	DestScreen SwitchScreenMsg
-	Params     map[string]string
+	Params     AdditionalParam
 }
 
 const (
@@ -16,6 +18,7 @@ const (
 	ScreenConnectionForm
 	ScreenConnection
 	ScreenQuery
+	ScreenQueryResult
 )
 
 // ErrMsg Generic error
@@ -24,7 +27,7 @@ type ErrMsg struct {
 }
 
 // SwitchTo Helper to create a command that switches screens
-func SwitchTo(screen SwitchScreenMsg, params map[string]string) tea.Cmd {
+func SwitchTo(screen SwitchScreenMsg, params AdditionalParam) tea.Cmd {
 	return func() tea.Msg {
 		return ScreenMsg{
 			DestScreen: screen,

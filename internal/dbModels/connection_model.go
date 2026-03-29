@@ -4,7 +4,6 @@ import (
 	"qit/internal/common"
 	"qit/internal/db"
 
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -29,9 +28,9 @@ func NewConnectionModel() ConnectionModel {
 	}
 }
 
-func (m ConnectionModel) EnterParams(params map[string]string) {
-	provider = params["provider"]
-	url = params["url"]
+func (m ConnectionModel) EnterParams(params common.AdditionalParam) {
+	provider = params["provider"].(string)
+	url = params["url"].(string)
 }
 
 func (m ConnectionModel) Init() tea.Cmd {
@@ -58,7 +57,7 @@ func (m ConnectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
-		if key.Matches(msg, common.QuitKey) {
+		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
 
