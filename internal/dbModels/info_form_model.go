@@ -25,7 +25,7 @@ func NewConnectionInfoFormModel() InfoFormModel {
 		form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[string]().
-					Title("Database of choice?").
+					Title("Database of choice? *").
 					Options(
 						huh.NewOption[string](db.DbSqlite, db.DbSqlite),
 						huh.NewOption[string](db.DbOracle, db.DbOracle),
@@ -33,7 +33,7 @@ func NewConnectionInfoFormModel() InfoFormModel {
 					).
 					Value(&selectedProvider).
 					Inline(true),
-				huh.NewInput().Title("DB URL").Value(&databaseUrl).
+				huh.NewInput().Title("DB URL *").Value(&databaseUrl).
 					Validate(func(value string) error {
 						if len(value) == 0 {
 							return errors.New("database url cannot be empty")
@@ -41,8 +41,9 @@ func NewConnectionInfoFormModel() InfoFormModel {
 
 						return nil
 					}),
-				huh.NewInput().Title("Username").Placeholder("Optional").Value(&username),
-				huh.NewInput().Title("Password").Placeholder("Optional").Value(&password).EchoMode(huh.EchoModePassword),
+				huh.NewInput().Title("Username").Placeholder("username").Value(&username),
+				huh.NewInput().Title("Password").Placeholder("password").Value(&password).EchoMode(huh.EchoModePassword),
+				huh.NewNote().Description("\\* fields are mandatory"),
 			),
 		),
 	}
