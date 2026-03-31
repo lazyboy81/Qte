@@ -50,7 +50,7 @@ func (m QueryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.form = updated.(*huh.Form)
 
 	if m.form.State == huh.StateCompleted {
-		return m, common.SwitchTo(common.ScreenQueryResult, nil)
+		return m, common.SwitchTo(common.QueryResultScreen, nil)
 	}
 
 	return m, cmd

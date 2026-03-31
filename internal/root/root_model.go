@@ -34,14 +34,14 @@ type Model struct {
 
 func NewRootModel() Model {
 	return Model{
-		currentScreen: common.ScreenHome,
+		currentScreen: common.HomeScreen,
 		screens: map[common.SwitchScreenMsg]Screen{
-			common.ScreenHome:           home.NewHomePage(),
-			common.ScreenInfo:           info.NewInfoModel(),
-			common.ScreenConnectionForm: dbModels.NewConnectionInfoFormModel(),
-			common.ScreenConnection:     dbModels.NewConnectionModel(),
-			common.ScreenQuery:          dbModels.NewQueryModel(),
-			common.ScreenQueryResult:    dbModels.NewResultModel(),
+			common.HomeScreen:           home.NewHomePage(),
+			common.InfoScreen:           info.NewInfoModel(),
+			common.ConnectionFormScreen: dbModels.NewConnectionInfoFormModel(),
+			common.ConnectionScreen:     dbModels.NewConnectionModel(),
+			common.QueryScreen:          dbModels.NewQueryModel(),
+			common.QueryResultScreen:    dbModels.NewResultModel(),
 		},
 	}
 }
@@ -59,7 +59,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC.String(), "q":
 			return m, tea.Quit
 		case "?":
-			return m, common.SwitchTo(common.ScreenInfo, nil)
+			return m, common.SwitchTo(common.InfoScreen, nil)
 		}
 	// Handle window resize globally, store dimensions
 	case tea.WindowSizeMsg:

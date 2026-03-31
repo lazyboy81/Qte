@@ -59,7 +59,7 @@ func (m InfoFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.form = updated.(*huh.Form)
 
 	if m.form.State == huh.StateCompleted {
-		return m, common.SwitchTo(common.ScreenConnection,
+		return m, common.SwitchTo(common.ConnectionScreen,
 			common.AdditionalParam{"provider": selectedProvider, "url": databaseUrl, "username": username, "password": password},
 		)
 	}

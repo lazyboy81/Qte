@@ -32,12 +32,12 @@ func NewHomePage() Model {
 		menuItem{
 			title:  "New Connection",
 			desc:   "Connect to a database",
-			screen: common.ScreenConnectionForm,
+			screen: common.ConnectionFormScreen,
 		},
 		menuItem{
 			title:  "Info",
 			desc:   "Information about this application",
-			screen: common.ScreenInfo,
+			screen: common.InfoScreen,
 		},
 	}
 

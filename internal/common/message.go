@@ -13,12 +13,12 @@ type ScreenMsg struct {
 }
 
 const (
-	ScreenHome SwitchScreenMsg = iota
-	ScreenInfo
-	ScreenConnectionForm
-	ScreenConnection
-	ScreenQuery
-	ScreenQueryResult
+	HomeScreen SwitchScreenMsg = iota
+	InfoScreen
+	ConnectionFormScreen
+	ConnectionScreen
+	QueryScreen
+	QueryResultScreen
 )
 
 // ErrMsg Generic error

@@ -46,7 +46,7 @@ func (m ConnectionModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		m.err = msg.Err
 		m.connected = msg.Err == nil
-		cmds = append(cmds, common.SwitchTo(common.ScreenQuery, nil))
+		cmds = append(cmds, common.SwitchTo(common.QueryScreen, nil))
 
 	case spinner.TickMsg:
 		// allow spinner to animate

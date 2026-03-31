@@ -54,7 +54,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case tea.KeyCtrlR.String():
-			return m, common.SwitchTo(common.ScreenHome, nil)
+			return m, common.SwitchTo(common.HomeScreen, nil)
 		}
 	}
 
