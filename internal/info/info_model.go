@@ -1,7 +1,7 @@
 package info
 
 import (
-	"qit/internal/common"
+	"qte/internal/common"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"

@@ -1,8 +1,8 @@
 package dbModels
 
 import (
-	"qit/internal/common"
-	"qit/internal/db"
+	"qte/internal/common"
+	"qte/internal/db"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"

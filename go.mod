@@ -1,4 +1,4 @@
-module qit
+module qte
 
 go 1.24.2
 

@@ -1,10 +1,10 @@
 package root
 
 import (
-	"qit/internal/common"
-	"qit/internal/dbModels"
-	"qit/internal/home"
-	"qit/internal/info"
+	"qte/internal/common"
+	"qte/internal/dbModels"
+	"qte/internal/home"
+	"qte/internal/info"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"

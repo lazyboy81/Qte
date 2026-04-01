@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"qit/internal/db"
-	"qit/internal/root"
+	"qte/internal/db"
+	"qte/internal/root"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	fmt.Println("this is qit")
+	fmt.Println("this is qte")
 	setupLogger()
 	db.InitializeDBRegistry()
 
@@ -24,7 +24,7 @@ func main() {
 }
 
 func setupLogger() {
-	file, err := os.OpenFile("qit.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile("qte.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		slog.Error("Error:", err)
 		os.Exit(1)

@@ -1,7 +1,7 @@
 package dbModels
 
 import (
-	"qit/internal/common"
+	"qte/internal/common"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"

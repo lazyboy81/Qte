@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"net/url"
 
 	tea "github.com/charmbracelet/bubbletea"
 	_ "github.com/godror/godror"
@@ -56,7 +57,7 @@ func openConnection(driver, datasource string) (*sql.DB, error) {
 func ConnectToDatabase(selectedProvider, databaseUrl string) tea.Cmd {
 	return func() tea.Msg {
 		var err error
-		database, err = connect(selectedProvider, databaseUrl)
+		database, err = connect(selectedProvider, url.QueryEscape(databaseUrl))
 
 		// return nil on success, or an error
 		return ConnectResultMsg{Err: err}

@@ -1,5 +1,5 @@
-APP_NAME=qit
-CMD=./cmd/qit
+APP_NAME=qte
+CMD=./cmd/qte
 BUILD_DIR=build
 
 .PHONY: build build-all clean

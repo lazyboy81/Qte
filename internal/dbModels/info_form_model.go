@@ -2,8 +2,8 @@ package dbModels
 
 import (
 	"errors"
-	"qit/internal/common"
-	"qit/internal/db"
+	"qte/internal/common"
+	"qte/internal/db"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
@@ -12,8 +12,6 @@ import (
 var (
 	selectedProvider string
 	databaseUrl      string
-	username         string
-	password         string
 )
 
 type InfoFormModel struct {
@@ -41,8 +39,6 @@ func NewConnectionInfoFormModel() InfoFormModel {
 
 						return nil
 					}),
-				huh.NewInput().Title("Username").Placeholder("username").Value(&username),
-				huh.NewInput().Title("Password").Placeholder("password").Value(&password).EchoMode(huh.EchoModePassword),
 				huh.NewNote().Description("\\* fields are mandatory"),
 			),
 		),
@@ -61,7 +57,7 @@ func (m InfoFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.form.State == huh.StateCompleted {
 		return m, common.SwitchTo(common.ConnectionScreen,
-			common.AdditionalParam{"provider": selectedProvider, "url": databaseUrl, "username": username, "password": password},
+			common.AdditionalParam{"provider": selectedProvider, "url": databaseUrl},
 		)
 	}
 
