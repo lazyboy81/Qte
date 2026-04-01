@@ -21,8 +21,7 @@ func NewQueryModel() QueryModel {
 		form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewConfirm().
-					Title("Execute Transactionally?").
-					Description("Wraps the query in BEGIN and COMMIT").
+					Title("Is Update/Insert/Delete?").
 					Affirmative("Yes").
 					Negative("No").
 					Value(&isTransactional),
