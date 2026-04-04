@@ -1,4 +1,4 @@
-module qte
+module query-terminal
 
 go 1.24.2
 
@@ -11,6 +11,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/godror/godror v0.50.0
 	github.com/mattn/go-sqlite3 v1.14.37
+	github.com/zalando/go-keyring v0.2.8
 )
 
 require (
@@ -26,9 +27,11 @@ require (
 	github.com/clipperhouse/displaywidth v0.9.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.5.0 // indirect
+	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
+	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/godror/knownpb v0.3.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/TQT.iml" filepath="$PROJECT_DIR$/.idea/TQT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Query-Terminal.iml" filepath="$PROJECT_DIR$/.idea/Query-Terminal.iml" />
     </modules>
   </component>
 </project>

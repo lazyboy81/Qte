@@ -1,7 +1,7 @@
 package home
 
 import (
-	"qte/internal/common"
+	"query-terminal/internal/common"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -33,6 +33,11 @@ func NewHomePage() Model {
 			title:  "New Connection",
 			desc:   "Connect to a database",
 			screen: common.ConnectionFormScreen,
+		},
+		menuItem{
+			title:  "Existing Connection",
+			desc:   "Connect to an existing database",
+			screen: common.ConnectionPickerScreen,
 		},
 		menuItem{
 			title:  "Info",

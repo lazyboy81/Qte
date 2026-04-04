@@ -2,8 +2,8 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
-	"net/url"
+	"query-terminal/internal/store"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	_ "github.com/godror/godror"
@@ -17,31 +17,32 @@ const (
 )
 
 var (
-	connectorRegistry map[string]connector
-	driverRegistry    map[string]string
-	database          *sql.DB
+	database *sql.DB
 )
 
 type ConnectResultMsg struct {
 	Err error
 }
 
-type connector func(string, string) (*sql.DB, error)
+func ConnectToDatabase(selectedDriver, databaseUrl, dbName string) tea.Cmd {
+	return func() tea.Msg {
+		var err error
+		database, err = openConnection(selectedDriver, databaseUrl)
+		if err == nil {
+			var exists bool
+			exists, err = store.ConnectionsCfg().Exists(dbName, selectedDriver, databaseUrl)
+			if !exists {
+				err = store.ConnectionsCfg().SaveConnection(dbName, selectedDriver, databaseUrl)
+			}
+		}
 
-func InitializeDBRegistry() {
-	connectorRegistry = make(map[string]connector)
-	driverRegistry = make(map[string]string)
-
-	registerDriverAndConnector(DbSqlite, "sqlite3", openConnection)
+		// return nil on success, or an error
+		return ConnectResultMsg{Err: err}
+	}
 }
 
-func registerDriverAndConnector(name, driver string, fn connector) {
-	connectorRegistry[name] = fn
-	driverRegistry[name] = driver
-}
-
-func openConnection(driver, datasource string) (*sql.DB, error) {
-	open, err := sql.Open(driver, datasource)
+func openConnection(selectedDriver, datasource string) (*sql.DB, error) {
+	open, err := sql.Open(selectedDriver, datasource)
 	if err != nil {
 		return nil, err
 	}
@@ -54,37 +55,12 @@ func openConnection(driver, datasource string) (*sql.DB, error) {
 	return open, nil
 }
 
-func ConnectToDatabase(selectedProvider, databaseUrl string) tea.Cmd {
+func ExecuteQueryInDatabase(query string) tea.Cmd {
 	return func() tea.Msg {
-		var err error
-		database, err = connect(selectedProvider, url.QueryEscape(databaseUrl))
-
-		// return nil on success, or an error
-		return ConnectResultMsg{Err: err}
-	}
-}
-
-func connect(name, dsn string) (*sql.DB, error) {
-	fn, connectorOk := connectorRegistry[name]
-	if !connectorOk {
-		return nil, fmt.Errorf("unknown db: %s", name)
-	}
-
-	driver, driverOk := driverRegistry[name]
-	if !driverOk {
-		return nil, fmt.Errorf("unknown db driver: %s", driver)
-	}
-
-	return fn(driver, dsn)
-}
-
-func ExecuteQueryInDatabase(query string, args ...any) tea.Cmd {
-	return func() tea.Msg {
-		isTransactional := args[0].(bool)
-		if isTransactional {
-			return executeUpdateQuery(query)
-		} else {
+		if strings.HasPrefix(strings.ToLower(query), "select") {
 			return executeSelectQuery(query)
+		} else {
+			return executeUpdateQuery(query)
 		}
 	}
 }

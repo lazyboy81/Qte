@@ -1,10 +1,14 @@
 package root
 
 import (
-	"qte/internal/common"
-	"qte/internal/dbModels"
-	"qte/internal/home"
-	"qte/internal/info"
+	"query-terminal/internal/common"
+	"query-terminal/internal/connection/establish"
+	"query-terminal/internal/connection/form"
+	"query-terminal/internal/connection/picker"
+	"query-terminal/internal/home"
+	"query-terminal/internal/info"
+	"query-terminal/internal/query/editor"
+	"query-terminal/internal/query/result"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -36,12 +40,13 @@ func NewRootModel() Model {
 	return Model{
 		currentScreen: common.HomeScreen,
 		screens: map[common.SwitchScreenMsg]Screen{
-			common.HomeScreen:           home.NewHomePage(),
-			common.InfoScreen:           info.NewInfoModel(),
-			common.ConnectionFormScreen: dbModels.NewConnectionInfoFormModel(),
-			common.ConnectionScreen:     dbModels.NewConnectionModel(),
-			common.QueryScreen:          dbModels.NewQueryModel(),
-			common.QueryResultScreen:    dbModels.NewResultModel(),
+			common.HomeScreen:                    home.NewHomePage(),
+			common.InfoScreen:                    info.NewInfoModel(),
+			common.ConnectionFormScreen:          form.NewConnectionFormModel(),
+			common.ConnectionPickerScreen:        picker.NewConnectionPickerModel(),
+			common.ConnectionEstablishmentScreen: establish.NewConnectionEstablishmentModel(),
+			common.QueryEditorScreen:             editor.NewQueryEditorModel(),
+			common.QueryResultScreen:             result.NewResultModel(),
 		},
 	}
 }
@@ -56,7 +61,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case tea.KeyCtrlC.String(), "q":
+		case tea.KeyCtrlC.String():
 			return m, tea.Quit
 		case "?":
 			return m, common.SwitchTo(common.InfoScreen, nil)

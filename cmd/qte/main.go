@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"log/slog"
 	"os"
-	"qte/internal/db"
-	"qte/internal/root"
+	"query-terminal/internal/root"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	fmt.Println("this is qte")
 	setupLogger()
-	db.InitializeDBRegistry()
 
-	slog.Debug("starting application...")
 	p := tea.NewProgram(root.NewRootModel())
 	if _, err := p.Run(); err != nil {
-		slog.Error("Error:", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 

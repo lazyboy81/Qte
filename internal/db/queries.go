@@ -15,8 +15,8 @@ type QueryResultMsg struct {
 	Err     error
 }
 
-func executeSelectQuery(query string, args ...any) QueryResultMsg {
-	queryResult, err := runQuery(query, args)
+func executeSelectQuery(query string) QueryResultMsg {
+	queryResult, err := runQuery(query)
 	if err != nil {
 		// return nil on success, or an error
 		return QueryResultMsg{Columns: nil, Rows: nil, Err: err}
@@ -37,8 +37,8 @@ func executeSelectQuery(query string, args ...any) QueryResultMsg {
 	return QueryResultMsg{Columns: columns, Rows: rows, Err: nil}
 }
 
-func executeUpdateQuery(query string, args ...any) QueryResultMsg {
-	result, err := runExec(query, args)
+func executeUpdateQuery(query string) QueryResultMsg {
+	result, err := runExec(query)
 	if err != nil {
 		// return nil on success, or an error
 		return QueryResultMsg{Err: err}
@@ -69,14 +69,14 @@ func executeUpdateQuery(query string, args ...any) QueryResultMsg {
 	return QueryResultMsg{Columns: headers, Rows: rows}
 }
 
-func runExec(query string, args ...any) (sql.Result, error) {
+func runExec(query string) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	return database.ExecContext(ctx, query)
 }
 
-func runQuery(query string, args ...any) (*sql.Rows, error) {
+func runQuery(query string) (*sql.Rows, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFunc()
 
@@ -84,18 +84,17 @@ func runQuery(query string, args ...any) (*sql.Rows, error) {
 }
 
 func extractHeaders(rows *sql.Rows) ([]table.Column, int, error) {
-	headers := make([]table.Column, 0)
-
 	columns, err := rows.Columns()
 	if err != nil {
-		return headers, 0, err
+		return nil, 0, err
 	}
 
-	for _, column := range columns {
-		headers = append(headers, table.Column{
+	headers := make([]table.Column, len(columns))
+	for idx, column := range columns {
+		headers[idx] = table.Column{
 			Title: column,
 			Width: len(column),
-		})
+		}
 	}
 
 	return headers, len(headers), nil

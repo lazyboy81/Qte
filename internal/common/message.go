@@ -16,8 +16,9 @@ const (
 	HomeScreen SwitchScreenMsg = iota
 	InfoScreen
 	ConnectionFormScreen
-	ConnectionScreen
-	QueryScreen
+	ConnectionEstablishmentScreen
+	ConnectionPickerScreen
+	QueryEditorScreen
 	QueryResultScreen
 )
 

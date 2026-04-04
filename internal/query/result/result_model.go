@@ -1,8 +1,8 @@
-package dbModels
+package result
 
 import (
-	"qte/internal/common"
-	"qte/internal/db"
+	"query-terminal/internal/common"
+	"query-terminal/internal/db"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -52,13 +52,13 @@ func defaultKeyMap() keyMap {
 			key.WithHelp("f/pgdn", "page down"),
 		),
 		Quit: key.NewBinding(
-			key.WithKeys("q", "ctrl+c"),
-			key.WithHelp("q/ctrl+c", "quit program"),
+			key.WithKeys("ctrl+c"),
+			key.WithHelp("ctrl+c", "quit program"),
 		),
 	}
 }
 
-type ResultModel struct {
+type Model struct {
 	table      table.Model
 	spinner    spinner.Model
 	keys       keyMap
@@ -71,10 +71,10 @@ type ResultModel struct {
 	sortAsc    bool
 }
 
-func NewResultModel() *ResultModel {
+func NewResultModel() *Model {
 	spinnerModel := spinner.New(spinner.WithSpinner(spinner.Dot))
 	tableModel := table.New(table.WithFocused(true)) //otherwise we wouldn't be able to scroll through the table
-	return &ResultModel{
+	return &Model{
 		spinner: spinnerModel,
 		table:   tableModel,
 		keys:    defaultKeyMap(),
@@ -82,13 +82,17 @@ func NewResultModel() *ResultModel {
 	}
 }
 
-func (m *ResultModel) EnterParams(params common.AdditionalParam) {}
+var query string
 
-func (m *ResultModel) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, db.ExecuteQueryInDatabase(query, isTransactional))
+func (m *Model) EnterParams(params common.AdditionalParam) {
+	query = params["query"].(string)
 }
 
-func (m *ResultModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Init() tea.Cmd {
+	return tea.Batch(m.spinner.Tick, db.ExecuteQueryInDatabase(query))
+}
+
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -126,13 +130,13 @@ func (m *ResultModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m *ResultModel) View() string {
+func (m *Model) View() string {
 	if m.loading {
 		return "Running given query... " + m.spinner.View()
 	}
 
 	if m.err != nil {
-		return "Error: " + m.err.Error() + "\nPress q to quit."
+		return "Error: " + m.err.Error() + "\nPress ctrl+c to quit."
 	}
 
 	return m.table.View() + "\n" + m.table.Help.View(m.keys)
