@@ -63,7 +63,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	body := `
-Welcome to Query; in Terminal application.
+Welcome to InputQuery; in Terminal application.
 This tool helps you run queries from the comfort of your terminal.
 
 Supported database include: 

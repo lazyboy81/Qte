@@ -26,9 +26,9 @@ func NewConnectionFormModel() Model {
 				huh.NewSelect[string]().
 					Title("Database of choice? *").
 					Options(
-						huh.NewOption[string](db.DbSqlite, "sqlite3"),
-						huh.NewOption[string](db.DbOracle, db.DbOracle),
-						huh.NewOption[string](db.DbPostgres, db.DbPostgres),
+						huh.NewOption[string](db.Sqlite, "sqlite3"),
+						huh.NewOption[string](db.Oracle, db.Oracle),
+						huh.NewOption[string](db.Postgres, db.Postgres),
 					).
 					Key(selectedDriver).
 					Inline(true),

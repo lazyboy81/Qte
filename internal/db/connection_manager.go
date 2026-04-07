@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	DbSqlite   = "SQLite"
-	DbOracle   = "Oracle"
-	DbPostgres = "PostgreSQL"
+	Sqlite   = "SQLite"
+	Oracle   = "Oracle"
+	Postgres = "PostgreSQL"
 )
 
 var (

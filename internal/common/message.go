@@ -1,6 +1,10 @@
 package common
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	"cmp"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 // SwitchScreenMsg Navigation message — any model can emit this to switch screens
 type SwitchScreenMsg int
@@ -18,8 +22,7 @@ const (
 	ConnectionFormScreen
 	ConnectionEstablishmentScreen
 	ConnectionPickerScreen
-	QueryEditorScreen
-	QueryResultScreen
+	QueryScreen
 )
 
 // ErrMsg Generic error
@@ -35,4 +38,11 @@ func SwitchTo(screen SwitchScreenMsg, params AdditionalParam) tea.Cmd {
 			Params:     params,
 		}
 	}
+}
+
+func Max[T cmp.Ordered](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
 }

@@ -3,52 +3,78 @@ package editor
 import (
 	"query-terminal/internal/common"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 )
 
-const (
-	query = "query"
-)
+var submissionKey = key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "submit query"))
+
+type UserInputMsg struct {
+	InputQuery string
+}
 
 type Model struct {
-	form *huh.Form
+	text textarea.Model
+	help help.Model
 }
 
 func NewQueryEditorModel() Model {
+	model := textarea.New()
+	model.Focus()
+	model.ShowLineNumbers = true
+	model.Placeholder = "SELECT * FROM users;"
+	model.SetWidth(50)
+	model.SetHeight(20)
+
 	return Model{
-		form: huh.NewForm(
-			huh.NewGroup(
-				huh.NewText().
-					Title("SQL Query").
-					ShowLineNumbers(true).
-					Placeholder("SELECT * FROM users;").
-					Lines(8). // Set height
-					Key(query).
-					Editor("vim").
-					ExternalEditor(true),
-			),
-		),
+		text: model,
+		help: help.New(),
+	}
+}
+
+func (m Model) ShortHelp() []key.Binding {
+	return getKeyBindings()
+}
+
+func (m Model) FullHelp() [][]key.Binding {
+	return [][]key.Binding{getKeyBindings()}
+}
+
+func getKeyBindings() []key.Binding {
+	return []key.Binding{
+		submissionKey,
 	}
 }
 
 func (m Model) EnterParams(params common.AdditionalParam) {}
 
 func (m Model) Init() tea.Cmd {
-	return m.form.Init()
+	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	updated, cmd := m.form.Update(msg)
-	m.form = updated.(*huh.Form)
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if key.Matches(msg, submissionKey) {
+			return m, func() tea.Msg {
+				return UserInputMsg{
+					InputQuery: m.text.Value(),
+				}
+			}
+		}
 
-	if m.form.State == huh.StateCompleted {
-		return m, common.SwitchTo(common.QueryResultScreen, common.AdditionalParam{"query": m.form.GetString(query)})
+	case tea.WindowSizeMsg:
+		m.text.SetWidth(msg.Width - 10)
 	}
 
+	var cmd tea.Cmd
+	m.text, cmd = m.text.Update(msg)
 	return m, cmd
 }
 
 func (m Model) View() string {
-	return m.form.View()
+	return lipgloss.JoinVertical(lipgloss.Center, m.text.View(), m.help.View(m))
 }

@@ -7,8 +7,7 @@ import (
 	"query-terminal/internal/connection/picker"
 	"query-terminal/internal/home"
 	"query-terminal/internal/info"
-	"query-terminal/internal/query/editor"
-	"query-terminal/internal/query/result"
+	"query-terminal/internal/query"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,13 +15,16 @@ import (
 
 var (
 	logo = `
-   ____         ______
-  / __ \   (_) /_  __/
- / / / /  / /   / /  
-/ /_/ /  / /   / /   
-\___\_\ /_/   /_/  
+   ____   ______        ;-)
+  / __ \ /_  __/___     
+ / / / /  / /  / _ \    
+/ /_/ /  / /  /  __/    
+\___\_\ /_/   \___/
 `
 )
+
+// because each one returns a new Style struct we cannot use const keyword
+var titleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7D56F4")).PaddingBottom(1)
 
 type Screen interface {
 	tea.Model
@@ -45,8 +47,7 @@ func NewRootModel() Model {
 			common.ConnectionFormScreen:          form.NewConnectionFormModel(),
 			common.ConnectionPickerScreen:        picker.NewConnectionPickerModel(),
 			common.ConnectionEstablishmentScreen: establish.NewConnectionEstablishmentModel(),
-			common.QueryEditorScreen:             editor.NewQueryEditorModel(),
-			common.QueryResultScreen:             result.NewResultModel(),
+			common.QueryScreen:                   query.NewQueryModel(),
 		},
 	}
 }
@@ -78,7 +79,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.screens[m.currentScreen].EnterParams(msg.Params)
 		// Re-initialize the new screen when switching to it
 		return m, m.screens[m.currentScreen].Init()
-
 	}
 
 	// Delegate to the current screen
@@ -89,13 +89,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#7D56F4")).
-		PaddingBottom(1)
-
 	return lipgloss.JoinVertical(
-		lipgloss.Left,
+		lipgloss.Center,
 		titleStyle.Render(logo),
 		m.screens[m.currentScreen].View(),
 	)

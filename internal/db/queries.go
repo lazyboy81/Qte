@@ -63,7 +63,7 @@ func executeUpdateQuery(query string) QueryResultMsg {
 	}
 
 	rows := []table.Row{
-		{"Query OK", fmt.Sprintf("%v", affected), fmt.Sprintf("%v", id)},
+		{"InputQuery OK", fmt.Sprintf("%v", affected), fmt.Sprintf("%v", id)},
 	}
 
 	return QueryResultMsg{Columns: headers, Rows: rows}

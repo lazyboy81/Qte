@@ -65,7 +65,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if !m.loading && m.connected {
-		cmds = append(cmds, common.SwitchTo(common.QueryEditorScreen, nil))
+		cmds = append(cmds, common.SwitchTo(common.QueryScreen, nil))
 	}
 
 	return m, tea.Batch(cmds...)
