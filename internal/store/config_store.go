@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/zalando/go-keyring"
 )
 

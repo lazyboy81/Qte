@@ -2,12 +2,13 @@ package info
 
 import (
 	"query-terminal/internal/common"
+	"sync"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/list"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/list"
 )
 
 var (
@@ -37,31 +38,40 @@ type Model struct {
 	help help.Model
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {}
+var model *Model
+var once sync.Once
 
-func NewInfoModel() Model {
-	return Model{
+func GetInfoModel() *Model {
+	once.Do(func() {
+		model = newInfoModel()
+	})
+
+	return model
+}
+
+func newInfoModel() *Model {
+	return &Model{
 		help: help.New(),
 	}
 }
 
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case tea.KeyCtrlR.String():
-			return m, common.SwitchTo(common.HomeScreen, nil)
+		case "ctrl+r":
+			return m, common.SwitchTo(common.HomeScreen)
 		}
 	}
 
 	return m, nil
 }
 
-func (m Model) View() string {
+func (m *Model) View() tea.View {
 	body := `
 Welcome to InputQuery; in Terminal application.
 This tool helps you run queries from the comfort of your terminal.
@@ -77,11 +87,13 @@ Supported database include:
 
 	content := boxStyle.Render(body + listStyle.Render(supportedDbs.String()))
 
-	return lipgloss.JoinVertical(
-		lipgloss.Center,
-		content,
-		m.help.View(KeyMap{
-			Return: key.NewBinding(key.WithKeys("ctrl+r"), key.WithHelp("ctrl+r", "return")),
-		}),
+	return tea.NewView(
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			content,
+			m.help.View(KeyMap{
+				Return: key.NewBinding(key.WithKeys("ctrl+r"), key.WithHelp("ctrl+r", "return")),
+			}),
+		),
 	)
 }

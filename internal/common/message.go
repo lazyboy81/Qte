@@ -3,17 +3,20 @@ package common
 import (
 	"cmp"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 // SwitchScreenMsg Navigation message — any model can emit this to switch screens
 type SwitchScreenMsg int
 
-type AdditionalParam map[string]any
-
 type ScreenMsg struct {
 	DestScreen SwitchScreenMsg
-	Params     AdditionalParam
+}
+
+type ConnectionInfo struct {
+	Driver string
+	Url    string
+	Name   string
 }
 
 const (
@@ -31,11 +34,10 @@ type ErrMsg struct {
 }
 
 // SwitchTo Helper to create a command that switches screens
-func SwitchTo(screen SwitchScreenMsg, params AdditionalParam) tea.Cmd {
+func SwitchTo(screen SwitchScreenMsg) tea.Cmd {
 	return func() tea.Msg {
 		return ScreenMsg{
 			DestScreen: screen,
-			Params:     params,
 		}
 	}
 }

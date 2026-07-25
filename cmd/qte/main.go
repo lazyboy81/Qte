@@ -6,7 +6,7 @@ import (
 	"os"
 	"query-terminal/internal/root"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 func setupLogger() {
 	file, err := os.OpenFile("qte.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		slog.Error("Error:", err)
+		slog.Error("Error encountered in the server", slog.Any("error message", err))
 		os.Exit(1)
 	}
 

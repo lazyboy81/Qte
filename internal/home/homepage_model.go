@@ -2,11 +2,12 @@ package home
 
 import (
 	"query-terminal/internal/common"
+	"sync"
 
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/list"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var (
@@ -27,7 +28,18 @@ type Model struct {
 	list list.Model
 }
 
-func NewHomePage() Model {
+var model *Model
+var once sync.Once
+
+func GetHomePage() *Model {
+	once.Do(func() {
+		model = newHomePage()
+	})
+
+	return model
+}
+
+func newHomePage() *Model {
 	items := []list.Item{
 		menuItem{
 			title:  "New Connection",
@@ -50,31 +62,29 @@ func NewHomePage() Model {
 	listModel.Title = "Options"
 	listModel.SetShowStatusBar(false)
 
-	return Model{
+	return &Model{
 		help: help.New(),
 		list: listModel,
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {}
-
 // Init we do any initialization that we want to do in this method (sort of like the love.load() function).
 // since we are simply getting user input here which are db url, username and password we don't need anything
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return nil
 }
 
 // Update we switch on the msg type that was given to us and match it
 // against the key mappings that we have defined
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "enter":
 			// Get selected item and switch to its screen
 			selected, ok := m.list.SelectedItem().(menuItem)
 			if ok {
-				return m, common.SwitchTo(selected.screen, nil)
+				return m, common.SwitchTo(selected.screen)
 			}
 		}
 	}
@@ -84,9 +94,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) View() string {
-	return lipgloss.JoinVertical(
-		lipgloss.Center,
-		listStyle.Render(m.list.View()),
+func (m *Model) View() tea.View {
+	return tea.NewView(
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			listStyle.Render(m.list.View()),
+		),
 	)
 }

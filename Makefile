@@ -1,6 +1,7 @@
 APP_NAME=qte
 CMD=./cmd/qte
 BUILD_DIR=build
+INTERNAL=./internal
 
 .PHONY: build build-all clean
 
@@ -17,3 +18,6 @@ clean:
 
 run:
 	go run $(CMD)/main.go
+
+test:
+	go test -v $(INTERNAL)/...

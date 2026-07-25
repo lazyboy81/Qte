@@ -3,11 +3,12 @@ package picker
 import (
 	"query-terminal/internal/common"
 	"query-terminal/internal/store"
+	"sync"
 
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/list"
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var (
@@ -29,22 +30,30 @@ type Model struct {
 	err     error
 }
 
-func NewConnectionPickerModel() Model {
+var model *Model
+var once sync.Once
+
+func GetConnectionPickerModel() *Model {
+	once.Do(func() {
+		model = newConnectionPickerModel()
+	})
+
+	return model
+}
+
+func newConnectionPickerModel() *Model {
 	model := spinner.New(spinner.WithSpinner(spinner.Dot))
-	return Model{
+	return &Model{
 		spinner: model,
 		loading: true,
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {
-}
-
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return tea.Batch(m.spinner.Tick, store.ConnectionsCfg().LoadAll())
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -72,9 +81,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Get selected item and switch to its screen
 			selected, ok := m.list.SelectedItem().(menuItem)
 			if ok {
-				return m, common.SwitchTo(common.ConnectionEstablishmentScreen,
-					common.AdditionalParam{"driver": selected.driver, "url": selected.url, "name": selected.name},
-				)
+				return m, tea.Sequence(common.SwitchTo(common.ConnectionEstablishmentScreen), func() tea.Msg {
+					return common.ConnectionInfo{
+						Driver: selected.driver,
+						Url:    selected.url,
+						Name:   selected.name,
+					}
+				})
 			}
 		}
 
@@ -106,17 +119,19 @@ func createListModel(views []store.ConnectionView) *list.Model {
 	return &model
 }
 
-func (m Model) View() string {
+func (m *Model) View() tea.View {
 	if m.loading {
-		return "Loading existing connections... " + m.spinner.View()
+		return tea.NewView("Loading existing connections... " + m.spinner.View())
 	}
 
 	if m.err != nil {
-		return "Error: " + m.err.Error() + "\nPress ctrl+c to quit."
+		return tea.NewView("Error: " + m.err.Error() + "\nPress ctrl+c to quit.")
 	}
 
-	return lipgloss.JoinVertical(
-		lipgloss.Center,
-		listStyle.Render(m.list.View()),
+	return tea.NewView(
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			listStyle.Render(m.list.View()),
+		),
 	)
 }

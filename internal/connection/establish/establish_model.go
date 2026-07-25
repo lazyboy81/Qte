@@ -3,15 +3,10 @@ package establish
 import (
 	"query-terminal/internal/common"
 	"query-terminal/internal/db"
+	"sync"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-)
-
-var (
-	driver string
-	url    string
-	name   string
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
 )
 
 type Model struct {
@@ -21,33 +16,46 @@ type Model struct {
 	connected bool
 }
 
-func NewConnectionEstablishmentModel() Model {
+var model *Model
+var once sync.Once
+
+func GetConnectionEstablishmentModel() *Model {
+	once.Do(func() {
+		model = newConnectionEstablishmentModel()
+	})
+
+	return model
+}
+
+func newConnectionEstablishmentModel() *Model {
 	model := spinner.New(spinner.WithSpinner(spinner.Dot))
-	return Model{
+	return &Model{
 		spinner: model,
 		loading: true,
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {
-	driver = params["driver"].(string)
-	url = params["url"].(string)
-	name = params["name"].(string)
+func (m *Model) Init() tea.Cmd {
+	return tea.Batch(m.spinner.Tick)
 }
 
-func (m Model) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, db.ConnectToDatabase(driver, url, name))
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 
-	case db.ConnectResultMsg:
+	case common.ConnectionInfo:
+		cmds = append(cmds, db.ConnectToDatabase(msg.Driver, msg.Url, msg.Name, 0))
+
+	case *db.ConnectResultMsg:
 		m.loading = false
 		m.err = msg.Err
 		m.connected = msg.Err == nil
+		if !m.loading && m.connected {
+			cmds = append(cmds, common.SwitchTo(common.QueryScreen), func() tea.Msg {
+				return msg.Conn
+			})
+		}
 
 	case spinner.TickMsg:
 		// allow spinner to animate
@@ -64,21 +72,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	}
 
-	if !m.loading && m.connected {
-		cmds = append(cmds, common.SwitchTo(common.QueryScreen, nil))
-	}
-
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
-	if m.loading {
-		return "Connecting to server... " + m.spinner.View()
-	}
-
-	if m.err != nil {
-		return "Error: " + m.err.Error() + "\nPress ctrl+c to quit."
-	}
-
-	return "Connected successfully!"
+func (m *Model) View() tea.View {
+	return tea.NewView("Connecting to server... " + m.spinner.View())
 }

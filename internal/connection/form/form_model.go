@@ -4,9 +4,10 @@ import (
 	"errors"
 	"query-terminal/internal/common"
 	"query-terminal/internal/db"
+	"sync"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 )
 
 const (
@@ -19,16 +20,27 @@ type Model struct {
 	form *huh.Form
 }
 
-func NewConnectionFormModel() Model {
-	return Model{
+var model *Model
+var once sync.Once
+
+func GetConnectionFormModel() *Model {
+	once.Do(func() {
+		model = newConnectionFormModel()
+	})
+
+	return model
+}
+
+func newConnectionFormModel() *Model {
+	return &Model{
 		form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewSelect[string]().
 					Title("Database of choice? *").
 					Options(
-						huh.NewOption[string](db.Sqlite, "sqlite3"),
-						huh.NewOption[string](db.Oracle, db.Oracle),
-						huh.NewOption[string](db.Postgres, db.Postgres),
+						huh.NewOption(db.Sqlite, "sqlite3"),
+						huh.NewOption(db.Oracle, "godror"),
+						huh.NewOption(db.Postgres, "pgx"),
 					).
 					Key(selectedDriver).
 					Inline(true),
@@ -54,25 +66,27 @@ func NewConnectionFormModel() Model {
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {}
-
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	updated, cmd := m.form.Update(msg)
 	m.form = updated.(*huh.Form)
 
 	if m.form.State == huh.StateCompleted {
-		return m, common.SwitchTo(common.ConnectionEstablishmentScreen,
-			common.AdditionalParam{"driver": m.form.GetString(selectedDriver), "url": m.form.GetString(databaseUrl), "name": m.form.GetString(dbName)},
-		)
+		return m, tea.Sequence(common.SwitchTo(common.ConnectionEstablishmentScreen), func() tea.Msg {
+			return common.ConnectionInfo{
+				Driver: m.form.GetString(selectedDriver),
+				Url:    m.form.GetString(databaseUrl),
+				Name:   m.form.GetString(dbName),
+			}
+		})
 	}
 
 	return m, cmd
 }
 
-func (m Model) View() string {
-	return m.form.View()
+func (m *Model) View() tea.View {
+	return tea.NewView(m.form.View())
 }

@@ -1,13 +1,11 @@
 package editor
 
 import (
-	"query-terminal/internal/common"
-
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textarea"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/textarea"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var submissionKey = key.NewBinding(key.WithKeys("ctrl+e"), key.WithHelp("ctrl+e", "submit query"))
@@ -21,7 +19,9 @@ type Model struct {
 	help help.Model
 }
 
-func NewQueryEditorModel() Model {
+var model *Model
+
+func NewQueryEditorModel() *Model {
 	model := textarea.New()
 	model.Focus()
 	model.ShowLineNumbers = true
@@ -29,17 +29,17 @@ func NewQueryEditorModel() Model {
 	model.SetWidth(50)
 	model.SetHeight(20)
 
-	return Model{
+	return &Model{
 		text: model,
 		help: help.New(),
 	}
 }
 
-func (m Model) ShortHelp() []key.Binding {
+func (m *Model) ShortHelp() []key.Binding {
 	return getKeyBindings()
 }
 
-func (m Model) FullHelp() [][]key.Binding {
+func (m *Model) FullHelp() [][]key.Binding {
 	return [][]key.Binding{getKeyBindings()}
 }
 
@@ -49,13 +49,11 @@ func getKeyBindings() []key.Binding {
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {}
-
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if key.Matches(msg, submissionKey) {
@@ -75,6 +73,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) View() string {
-	return lipgloss.JoinVertical(lipgloss.Center, m.text.View(), m.help.View(m))
+func (m *Model) View() tea.View {
+	return tea.NewView(lipgloss.JoinVertical(lipgloss.Center, m.text.View(), m.help.View(m)))
 }

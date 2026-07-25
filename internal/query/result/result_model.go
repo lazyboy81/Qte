@@ -1,15 +1,16 @@
 package result
 
 import (
-	"query-terminal/internal/common"
+	"errors"
+	"log/slog"
 	"query-terminal/internal/db"
 	"query-terminal/internal/query/editor"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type keyMap struct {
@@ -61,6 +62,7 @@ func defaultKeyMap() keyMap {
 }
 
 type Model struct {
+	connection *db.ActiveConnection
 	table      table.Model
 	spinner    spinner.Model
 	keys       keyMap
@@ -74,10 +76,10 @@ type Model struct {
 	sortAsc    bool
 }
 
-func NewResultModel() Model {
+func NewResultModel() *Model {
 	spinnerModel := spinner.New(spinner.WithSpinner(spinner.Dot))
 	tableModel := table.New(table.WithFocused(true)) //otherwise we wouldn't be able to scroll through the table
-	return Model{
+	return &Model{
 		spinner: spinnerModel,
 		table:   tableModel,
 		keys:    defaultKeyMap(),
@@ -85,13 +87,15 @@ func NewResultModel() Model {
 	}
 }
 
-func (m Model) EnterParams(params common.AdditionalParam) {}
+func (m *Model) SetConnection(conn *db.ActiveConnection) {
+	m.connection = conn
+}
 
-func (m Model) Init() tea.Cmd {
+func (m *Model) Init() tea.Cmd {
 	return m.spinner.Tick
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -115,11 +119,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case editor.UserInputMsg:
 		m.waiting = false
 		m.loading = true
-		cmds = append(cmds, db.ExecuteQueryInDatabase(msg.InputQuery))
+		if m.connection == nil {
+			m.loading = false
+			m.err = errors.New("no active connection")
+			return m, nil
+		}
+		cmds = append(cmds, m.connection.ExecuteQueryInDatabase(msg.InputQuery))
 
 	case db.QueryResultMsg:
 		m.loading = false
 		m.err = msg.Err
+		if msg.Err != nil {
+			slog.Debug("error encountered during query run", slog.Any("Err", msg.Err.Error()))
+		}
 		m.table.SetColumns(msg.Columns)
 		m.table.SetRows(msg.Rows)
 		m.table.SetHeight(11) // 11 since 1 row is the header, and we want to show 10 rows of data
@@ -134,22 +146,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) View() string {
+func (m *Model) View() tea.View {
 	if m.waiting {
-		return "Waiting for input query... " + m.spinner.View()
+		return tea.NewView("Waiting for input query... " + m.spinner.View())
 	}
 
 	if m.loading {
-		return "Running given query... " + m.spinner.View()
+		return tea.NewView("Running given query... " + m.spinner.View())
 	}
 
 	if m.err != nil {
-		return "Error: " + m.err.Error() + "\nPress ctrl+c to quit."
+		return tea.NewView("Error: " + m.err.Error() + "\nPress ctrl+c to quit.")
 	}
 
-	return lipgloss.JoinVertical(
-		lipgloss.Left,
-		m.table.View(),
-		m.table.Help.View(m.keys),
+	return tea.NewView(
+		lipgloss.JoinVertical(
+			lipgloss.Left,
+			m.table.View(),
+			m.table.Help.View(m.keys),
+		),
 	)
 }

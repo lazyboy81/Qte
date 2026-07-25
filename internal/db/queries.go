@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/table"
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
 )
 
 type QueryResultMsg struct {
@@ -15,30 +17,53 @@ type QueryResultMsg struct {
 	Err     error
 }
 
-func executeSelectQuery(query string) QueryResultMsg {
-	queryResult, err := runQuery(query)
+type ActiveConnection struct {
+	ConnId int
+	db     *sql.DB
+}
+
+func (a *ActiveConnection) ExecuteQueryInDatabase(query string) tea.Cmd {
+	return func() tea.Msg {
+		q := strings.TrimSpace(strings.ToLower(query))
+		if strings.HasPrefix(q, "select") || strings.HasPrefix(q, "with") {
+			return a.executeSelectQuery(query)
+		}
+
+		return a.executeUpdateQuery(query)
+	}
+}
+
+func (a *ActiveConnection) executeSelectQuery(query string) QueryResultMsg {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFunc()
+
+	queryResult, err := a.db.QueryContext(ctx, query)
 	if err != nil {
 		// return nil on success, or an error
-		return QueryResultMsg{Columns: nil, Rows: nil, Err: err}
+		return QueryResultMsg{Err: err}
 	}
 	defer queryResult.Close()
 
 	columns, columnCount, err := extractHeaders(queryResult)
 	if err != nil {
 		// return nil on success, or an error
-		return QueryResultMsg{Columns: nil, Rows: nil, Err: err}
+		return QueryResultMsg{Err: err}
 	}
+
 	rows, err := extractRows(queryResult, columnCount)
 	if err != nil {
 		// return nil on success, or an error
-		return QueryResultMsg{Columns: nil, Rows: nil, Err: err}
+		return QueryResultMsg{Err: err}
 	}
 
-	return QueryResultMsg{Columns: columns, Rows: rows, Err: nil}
+	return QueryResultMsg{Columns: columns, Rows: rows}
 }
 
-func executeUpdateQuery(query string) QueryResultMsg {
-	result, err := runExec(query)
+func (a *ActiveConnection) executeUpdateQuery(query string) QueryResultMsg {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	result, err := a.db.ExecContext(ctx, query)
 	if err != nil {
 		// return nil on success, or an error
 		return QueryResultMsg{Err: err}
@@ -50,7 +75,7 @@ func executeUpdateQuery(query string) QueryResultMsg {
 	headers := []table.Column{
 		{
 			Title: "Result",
-			Width: 8,
+			Width: 13,
 		},
 		{
 			Title: "Affected Rows",
@@ -67,20 +92,6 @@ func executeUpdateQuery(query string) QueryResultMsg {
 	}
 
 	return QueryResultMsg{Columns: headers, Rows: rows}
-}
-
-func runExec(query string) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	return database.ExecContext(ctx, query)
-}
-
-func runQuery(query string) (*sql.Rows, error) {
-	ctx, cancelFunc := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFunc()
-
-	return database.QueryContext(ctx, query)
 }
 
 func extractHeaders(rows *sql.Rows) ([]table.Column, int, error) {
@@ -107,7 +118,7 @@ func extractRows(rows *sql.Rows, columnCount int) ([]table.Row, error) {
 		values := make([]any, columnCount)
 
 		valuesPtr := make([]any, columnCount)
-		for i := 0; i < columnCount; i++ {
+		for i := range columnCount {
 			valuesPtr[i] = &values[i]
 		}
 
