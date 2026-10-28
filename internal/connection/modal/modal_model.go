@@ -51,7 +51,7 @@ func newConnectionModalModel() *Model {
 	}
 
 	listModel := list.New(items, list.NewDefaultDelegate(), 60, 20)
-	listModel.Title = "Options"
+	listModel.Title = "Connection"
 	listModel.SetShowStatusBar(false)
 
 	return &Model{
@@ -84,5 +84,5 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *Model) View() tea.View {
-	return m.list.View()
+	return tea.NewView(m.list.View())
 }
